@@ -841,7 +841,7 @@ class SettingsViewController: FormViewController, Themeable {
             assertionFailure("Attempting to change class but there is no user!"); return
         }
         if user.canChooseClassForFree == true {
-            let _ = UserManager.shared.showClassSelection(user: user)
+            _ = UserManager.shared.showClassSelection(user: user)
         } else {
             let alertController = HabiticaAlertController(title: L10n.Settings.areYouSure, message: L10n.Settings.changeClassDisclaimer)
             let changeClassCosts = changeClassCosts
@@ -851,7 +851,7 @@ class SettingsViewController: FormViewController, Themeable {
                     HRPGBuyItemModalViewController.displayInsufficientGemsModal(delayDisplay: false)
                     return
                 }
-                let _ = UserManager.shared.showClassSelection(user: user)
+                _ = UserManager.shared.showClassSelection(user: user)
             }
             alertController.addCancelAction()
             alertController.show()

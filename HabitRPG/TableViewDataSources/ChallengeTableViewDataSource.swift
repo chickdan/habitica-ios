@@ -43,7 +43,7 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
         sections.append(ItemSection<ChallengeProtocol>())
         fetchChallenges()
         
-        disposable.add(socialRepository.getChallengeMemberships().on(value: {[weak self]memberships, _ in
+        disposable.add(socialRepository.getChallengeMemberships().on(value: { [weak self] memberships, _ in
             self?.membershipIDs.removeAll()
             memberships.forEach({ (membership) in
                 if let challengeID = membership.challengeID {
@@ -60,7 +60,7 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
         if let disposable = fetchChallengesDisposable, !disposable.isDisposed {
             disposable.dispose()
         }
-        fetchChallengesDisposable = socialRepository.getChallenges(predicate: predicate).on(value: {[weak self](challenges, changes) in
+        fetchChallengesDisposable = socialRepository.getChallenges(predicate: predicate).on(value: { [weak self] challenges, changes in
             self?.sections[0].items = challenges
             self?.notify(changes: changes)
         }).start()
@@ -81,7 +81,9 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
         }
         isLoading = true
         socialRepository.retrieveChallenges(page: nextPage, memberOnly: isShowingJoinedChallenges)
-            .on(value: { challenges in
+            .on(value: { [weak self] challenges in
+                guard let self = self else { return }
+
                 if challenges?.count ?? 0 < 10 {
                     self.loadedAllData = true
                 }
@@ -117,16 +119,16 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
         var searchComponents = [String]()
         let userId = socialRepository.currentUserId ?? ""
 
-        if self.showOwned != self.showNotOwned {
-            if self.showOwned {
+        if showOwned != showNotOwned {
+            if showOwned {
                 searchComponents.append("leaderID == \'\(userId)\'")
             } else {
                 searchComponents.append("leaderID != \'\(userId)\'")
             }
         }
-        if let shownGuilds = self.shownGuilds {
+        if let shownGuilds = shownGuilds {
             var component = "groupID IN {"
-            if shownGuilds.isEmpty == false {
+            if !shownGuilds.isEmpty {
                 component.append("\'\(shownGuilds[0])\'")
             }
             for id in shownGuilds.dropFirst() {
@@ -135,10 +137,8 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
             component.append("}")
             searchComponents.append(component)
         }
-        if let searchText = self.searchText {
-            if searchText.isEmpty == false {
-                searchComponents.append("((name CONTAINS[cd] \'\(searchText)\') OR (notes CONTAINS[cd] \'\(searchText)\'))")
-            }
+        if let searchText = searchText, !searchText.isEmpty {
+            searchComponents.append("((name CONTAINS[cd] \'\(searchText)\') OR (notes CONTAINS[cd] \'\(searchText)\'))")
         }
         
         if isShowingJoinedChallenges {
@@ -158,10 +158,10 @@ class ChallengeTableViewDataSource: BaseReactiveTableViewDataSource<ChallengePro
             searchComponents.append(component)
         }
         
-        if searchComponents.isEmpty == false {
-            return NSPredicate(format: searchComponents.joined(separator: " && "))
-        } else {
+        if searchComponents.isEmpty {
             return nil
+        } else {
+            return NSPredicate(format: searchComponents.joined(separator: " && "))
         }
     }
 }

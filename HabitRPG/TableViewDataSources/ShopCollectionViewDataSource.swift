@@ -86,7 +86,7 @@ class ShopCollectionViewDataSource: BaseReactiveCollectionViewDataSource<InAppRe
                 return rewards.map({ (reward) in
                     return reward.key
                 })
-            }).on(value: {[weak self]rewards in
+            }).on(value: { [weak self] rewards in
                 self?.pinnedItems = rewards
             }).start())
         
@@ -96,7 +96,7 @@ class ShopCollectionViewDataSource: BaseReactiveCollectionViewDataSource<InAppRe
                 ownedItems["\(item.key ?? "")-\(item.itemType ?? "")"] = item
             }
             return ownedItems
-        }).on(value: {[weak self] items in
+        }).on(value: { [weak self] items in
             self?.ownedItems = items
             self?.collectionView?.reloadData()
             }).start())
@@ -150,7 +150,7 @@ class ShopCollectionViewDataSource: BaseReactiveCollectionViewDataSource<InAppRe
                     return !ownedGear.contains(key)
                 })
             })
-            .on(value: {[weak self] items in
+            .on(value: { [weak self] items in
                 if (self?.sections.count ?? 0) > 0 {
                     self?.sections[0].items = items
                     self?.sections[0].showIfEmpty = true
@@ -161,7 +161,7 @@ class ShopCollectionViewDataSource: BaseReactiveCollectionViewDataSource<InAppRe
     
     func retrieveShopInventory(_ completed: (() -> Void)?) {
         inventoryRepository.retrieveShopInventory(identifier: shopIdentifier)
-            .flatMap(.latest, {[weak self] (shop) -> Signal<ShopProtocol?, Never> in
+            .flatMap(.latest, { [weak self] (shop) -> Signal<ShopProtocol?, Never> in
                 if shop?.identifier == Constants.MarketKey {
                     return self?.inventoryRepository.retrieveShopInventory(identifier: Constants.GearMarketKey) ?? Signal.empty
                 } else {
@@ -204,7 +204,7 @@ class ShopCollectionViewDataSource: BaseReactiveCollectionViewDataSource<InAppRe
                 headerView.titleLabel.text = L10n.Equipment.classEquipment
                 headerView.gearCategoryLabel.text = ifWizardConvertToMage(selectedGearCategory)?.capitalized
                 headerView.gearCategoryButton.isHidden = false
-                headerView.onGearCategoryLabelTapped = {[weak self] in
+                headerView.onGearCategoryLabelTapped = { [weak self] in
                     self?.delegate?.showGearSelection(sourceView: headerView.gearCategoryButton)
                 }
                 headerView.otherClassDisclaimer.isHidden = userClass == selectedInternalGearCategory || selectedInternalGearCategory == "none"

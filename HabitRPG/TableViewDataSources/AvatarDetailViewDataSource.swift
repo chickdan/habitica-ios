@@ -35,11 +35,11 @@ class AvatarDetailViewDataSource: BaseReactiveCollectionViewDataSource<Customiza
         
         disposable.add(customizationRepository.getCustomizations(type: customizationType, group: customizationGroup)
             .combineLatest(with: customizationRepository.getOwnedCustomizations(type: customizationType, group: customizationGroup))
-            .on(value: {[weak self](customizations, ownedCustomizations) in
+            .on(value: { [weak self] customizations, ownedCustomizations in
                 self?.ownedCustomizations = ownedCustomizations.value
                 self?.configureSections(customizations.value)
         }).start())
-        disposable.add(userRepository.getUser().on(value: {[weak self]user in
+        disposable.add(userRepository.getUser().on(value: { [weak self] user in
             self?.preferences = user.preferences
             self?.gemCount = user.gemCount
             
@@ -85,7 +85,7 @@ class AvatarDetailViewDataSource: BaseReactiveCollectionViewDataSource<Customiza
     }
     
     func owns(customization: CustomizationProtocol) -> Bool {
-        return ownedCustomizations.contains(where: { (ownedCustomization) -> Bool in
+        return ownedCustomizations.contains(where: { ownedCustomization in
             return ownedCustomization.key == customization.key
         })
     }
@@ -101,7 +101,7 @@ class AvatarDetailViewDataSource: BaseReactiveCollectionViewDataSource<Customiza
                 }
             }
             if let set = customization.set {
-                if let index = sections.firstIndex(where: { (section) -> Bool in
+                if let index = sections.firstIndex(where: { (section) in
                     return section.key == set.key
                 }) {
                     sections[index].items.append(customization)
@@ -118,7 +118,7 @@ class AvatarDetailViewDataSource: BaseReactiveCollectionViewDataSource<Customiza
         if customizationType == "background" {
             sections = sections.filter({ section -> Bool in
                 return section.items.isEmpty == false
-            }).sorted { (firstSection, secondSection) -> Bool in
+            }).sorted { firstSection, secondSection in
                 if firstSection.key?.contains("incentive") == true || firstSection.key?.contains("timeTravel") == true {
                     return true
                 } else if secondSection.key?.contains("incentive") == true || secondSection.key?.contains("timeTravel") == true {
@@ -166,7 +166,7 @@ class AvatarDetailViewDataSource: BaseReactiveCollectionViewDataSource<Customiza
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         if let customization = item(at: indexPath) {
-            if customization.isPurchasable == true && !owns(customization: customization) {
+            if customization.isPurchasable && !owns(customization: customization) {
                 return CGSize(width: 80, height: 108)
             } else {
                 return CGSize(width: 80, height: 80)
